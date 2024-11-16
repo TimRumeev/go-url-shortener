@@ -6,11 +6,12 @@ import (
 	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
+	"github.com/joho/godotenv"
 )
 
 type Config struct {
 	Env         string `yaml:"env" env-default:"local"`
-	StoragePath string `yalm:"storage_pass" env-required:"true"`
+	StoragePath string `yaml:"storage_pass" env-required:"true"`
 	HTTPServer  `yaml:"http_server"`
 }
 
@@ -21,6 +22,12 @@ type HTTPServer struct {
 }
 
 func MustLoad() *Config {
+
+	err := godotenv.Load("../../.env")
+	if err != nil {
+		log.Fatalf("unable to read config path: %s", err)
+	}
+
 	configPath := os.Getenv("CONFIG_PASS")
 	if configPath == "" {
 		log.Fatal("CONFIG PASS is not valid")
