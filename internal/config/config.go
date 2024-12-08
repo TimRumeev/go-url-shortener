@@ -11,7 +11,7 @@ import (
 
 type Config struct {
 	Env         string `yaml:"env" env-default:"local"`
-	StoragePath string `yaml:"storage_pass" env-required:"true"`
+	StoragePath string `yaml:"storage_path" env-required:"true"`
 	HTTPServer  `yaml:"http_server"`
 }
 
@@ -28,7 +28,7 @@ func MustLoad() *Config {
 		log.Fatalf("unable to read config path: %s", err)
 	}
 
-	configPath := os.Getenv("CONFIG_PASS")
+	configPath := os.Getenv("CONFIG_PATH")
 	if configPath == "" {
 		log.Fatal("CONFIG PASS is not valid")
 	}
