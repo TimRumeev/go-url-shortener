@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	resp "ex.com/internal/lib/api/response"
 	"ex.com/internal/storage"
 	"github.com/mattn/go-sqlite3"
 )
@@ -41,7 +42,7 @@ func New(storagePath string) (*Storage, error) {
 	return &Storage{db: db}, nil
 }
 
-func (s *Storage) SaveUrl(urlToSave string, alias string) (int64, error) {
+func (s *Storage) Save(urlToSave string, alias string) (int64, error) {
 	const op = "storage.sqlite.SaveUrl"
 
 	stmt, err := s.db.Prepare("INSERT INTO url(url, alias) VALUES(?, ?)")
@@ -72,7 +73,7 @@ func (s *Storage) GetUrlByAlias(alias string) (string, error) {
 
 	stmt, err := s.db.Prepare("SELECT url FROM url WHERE alias = ?")
 	if err != nil {
-		return " ", fmt.Errorf("%s: %w", op, err)
+		return "", fmt.Errorf("%s: %w", op, err)
 	}
 	var resURL string
 
@@ -81,7 +82,7 @@ func (s *Storage) GetUrlByAlias(alias string) (string, error) {
 		return " ", storage.ERR_URL_NOT_FOUND
 	}
 	if err != nil {
-		return " ", fmt.Errorf("%s: %w", op, err)
+		return "", fmt.Errorf("%s: %w", op, err)
 	}
 
 	return resURL, nil
@@ -104,22 +105,28 @@ func (s *Storage) DeleteUrl(alias string) error {
 	return nil
 }
 
-func (s *Storage) GetAll() (string, error) {
+func (s *Storage) GetAll() ([]resp.Url, error) {
 	const op = "storage.sqlite.GetAll"
 	rows, err := s.db.Query("SELECT id, url, alias FROM url")
 	if err != nil {
-		return " ", fmt.Errorf("%s: %w", op, err)
+		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 	defer rows.Close()
-	var result string
+	var result []resp.Url
 	for rows.Next() {
 		var id int64
 		var url string
 		var alias string
 		if err := rows.Scan(&id, &url, &alias); err != nil {
-			return " ", fmt.Errorf("%s: %w", op, err)
+			return nil, fmt.Errorf("%s: %w", op, err)
 		}
-		result += fmt.Sprintf("{id: %d, url: %s, alias: %s}, ", id, url, alias)
+
+		result = append(result, resp.Url{
+			Id:    id,
+			Alias: alias,
+			Url:   url,
+		})
 	}
 	return result, nil
+
 }
