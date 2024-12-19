@@ -7,6 +7,7 @@ import (
 
 	"ex.com/internal/config"
 	getall "ex.com/internal/http-server/handlers/url/get_all"
+	"ex.com/internal/http-server/handlers/url/redirect"
 	"ex.com/internal/http-server/handlers/url/save"
 	"ex.com/internal/lib/loggeer/handlers/slogpretty"
 	"ex.com/internal/lib/loggeer/sl"
@@ -42,7 +43,7 @@ func main() {
 
 	router.Post("/url/save", save.New(logger, storage))
 	router.Get("/url/getAll", getall.New(logger, storage))
-
+	router.Get("/{alias}", redirect.New(logger, storage))
 	server := &http.Server{
 		Addr:         cfg.Address,
 		Handler:      router,
